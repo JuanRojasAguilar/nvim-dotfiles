@@ -1,6 +1,7 @@
 return {
     {
         "mason-org/mason.nvim",
+        lazy = false,
         build = ":MasonUpdate",
         cmd = {
             "Mason",
@@ -11,11 +12,11 @@ return {
         },
         opts = {
             ui = {
+                border = "rounded",
                 icons = {
                     package_installed = "✔️",
                     package_pending = "🕓",
                     package_uninstalled = "❌",
-                    border = "rounded",
                 }
             }
         },
@@ -23,27 +24,26 @@ return {
     {
         "neovim/nvim-lspconfig",
         dependencies = {
+            "williamboman/mason.nvim",
             "williamboman/mason-lspconfig.nvim"
         },
         config = function ()
             local lspconfig = require("lspconfig")
             local mason_lsp = require("mason-lspconfig")
 
-            mason_lsp.setup({
-                ensure_installed = { "lua_ls" }
-            })
-            
-            local on_attach = function(_, bufnr)
-                local opts = { buffer = bufnr }
-                vim.keymap.set("n", "gd", vim.lsp.buf.definition, opts)
-                vim.keymap.set("n", "gr", vim.lsp.buf.references, opts)
+                vim.keymap.set("n", "<F12>", vim.lsp.buf.definition, opts)
+                vim.keymap.set("n", "gR", vim.lsp.buf.references, opts)
                 vim.keymap.set("n", "K", vim.lsp.buf.hover, opts)
-            end
-
-            mason_lsp.setup_handlers({
-                function(server_name)
-                    lspconfig[server_name].setup({
+            mason_lsp.setup({
+                ensure_installed = { "lua_ls" },
+                ["lua_ls"] = function()
+                    lspconfig.lua_ls.setup({
                         on_attach = on_attach,
+                        settings = {
+                            Lua = {
+                                diagnostics = { globals = { "vim" } }
+                            }
+                        }
                     })
                 end,
             })
